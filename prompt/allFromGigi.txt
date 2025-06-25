@@ -1,0 +1,740 @@
+import React, { useState, useEffect } from 'react';
+
+const WeddingGame = () => {
+  const [currentScreen, setCurrentScreen] = useState('home');
+  const [stars, setStars] = useState([]);
+  const [gameScore, setGameScore] = useState(0);
+  const [unlockedLevels, setUnlockedLevels] = useState([1]);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const newStars = [];
+    for (let i = 0; i < 50; i++) {
+      newStars.push({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 3 + 1,
+        speed: Math.random() * 1 + 0.3
+      });
+    }
+    setStars(newStars);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStars(prevStars => 
+        prevStars.map(star => ({
+          ...star,
+          y: star.y > 100 ? -5 : star.y + star.speed
+        }))
+      );
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.pageYOffset;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+      setScrollProgress(Math.min(scrollPercent, 100));
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [currentScreen]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    setScrollProgress(0);
+  }, [currentScreen]);
+
+  const unlockLevel = (level) => {
+    if (!unlockedLevels.includes(level)) {
+      setUnlockedLevels(prev => [...prev, level].sort());
+      setGameScore(prev => prev + 1000);
+    }
+  };
+
+  const isLevelUnlocked = (level) => {
+    return unlockedLevels.includes(level);
+  };
+
+  // Fix per i click lenti - gestione diretta senza delay
+  const handleLevelClick = (level, screen) => {
+    if (isLevelUnlocked(level)) {
+      setGameScore(prev => prev + 500);
+      setCurrentScreen(screen);
+      // Sblocco immediato del livello successivo
+      if (level === 1 && !isLevelUnlocked(2)) {
+        unlockLevel(2);
+      } else if (level === 2 && !isLevelUnlocked(3)) {
+        unlockLevel(3);
+      }
+    }
+  };
+
+  const HomePage = () => (
+    <div className="min-h-screen bg-black relative overflow-hidden font-mono">
+      <div className="absolute inset-0 bg-gradient-to-b from-purple-900 via-blue-900 to-black">
+        <div className="absolute inset-0 opacity-20">
+          {[...Array(20)].map((_, i) => (
+            <div key={i} className="w-full h-px bg-cyan-400 absolute" style={{top: `${i * 5}%`}} />
+          ))}
+        </div>
+        
+        {stars.map(star => (
+          <div
+            key={star.id}
+            className="absolute bg-white rounded-full animate-pulse"
+            style={{
+              left: `${star.x}%`,
+              top: `${star.y}%`,
+              width: `${star.size}px`,
+              height: `${star.size}px`
+            }}
+          />
+        ))}
+      </div>
+      
+      <div className="fixed top-0 left-0 w-full h-2 bg-gray-800 z-50">
+        <div 
+          className="h-full bg-gradient-to-r from-cyan-400 to-yellow-400 transition-all duration-300"
+          style={{ width: `${scrollProgress}%` }}
+        />
+      </div>
+      
+      <div className="relative z-10 min-h-screen flex flex-col">
+        <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-b-4 border-yellow-400 bg-black gap-2">
+          <div className="text-yellow-400 text-sm sm:text-lg">HIGH SCORE: {gameScore.toLocaleString()}</div>
+          <div className="text-cyan-400 text-sm sm:text-lg">CREDITS: ∞</div>
+          <div className="text-red-400 text-sm sm:text-lg">PLAYER: READY</div>
+        </div>
+        
+        <div className="flex-1 flex flex-col items-center justify-center px-4">
+          <div className="mb-8 text-center">
+            <div className="text-4xl sm:text-6xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 animate-pulse mb-4">
+              LOVE
+            </div>
+            <div className="text-3xl sm:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 animate-pulse">
+              QUEST
+            </div>
+          </div>
+          
+          <div className="mb-8">
+            <div className="bg-black border-4 border-yellow-400 p-4 sm:p-8 relative">
+              <div className="flex items-center justify-center space-x-8 relative z-10">
+                <div className="text-center">
+                  <div className="text-3xl text-yellow-400 mb-2">P1</div>
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-pink-400 border-2 border-black mb-2 relative mx-auto">
+                    <div className="absolute top-2 left-3 w-2 h-2 bg-black rounded-full"></div>
+                    <div className="absolute top-2 right-3 w-2 h-2 bg-black rounded-full"></div>
+                    <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 w-4 h-1 bg-red-500"></div>
+                  </div>
+                  <div className="text-pink-400 text-sm">MARINA</div>
+                </div>
+                
+                <div className="text-4xl sm:text-6xl animate-bounce">💖</div>
+                
+                <div className="text-center">
+                  <div className="text-3xl text-cyan-400 mb-2">P2</div>
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-cyan-400 border-2 border-black mb-2 relative mx-auto">
+                    <div className="absolute top-2 left-3 w-2 h-2 bg-black rounded-full"></div>
+                    <div className="absolute top-2 right-3 w-2 h-2 bg-black rounded-full"></div>
+                    <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 w-4 h-1 bg-red-500"></div>
+                    <div className="absolute top-1 left-2 right-2 h-1 bg-black"></div>
+                  </div>
+                  <div className="text-cyan-400 text-sm">DANILO</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="max-w-2xl mx-auto mb-12 p-6 bg-black border-4 border-green-400">
+            <div className="text-green-400 text-center text-lg">
+              <div className="text-yellow-400 mb-4 text-xl">*** PRESS START TO BEGIN ***</div>
+              <p className="mb-4">INSERISCI MONETA PER INIZIARE L'AVVENTURA PIÙ EPICA</p>
+              <p className="mb-4">DUE GIOCATORI. UNA MISSIONE. AMORE INFINITO.</p>
+              <p className="text-cyan-400">PREMI START PER CONTINUARE...</p>
+            </div>
+          </div>
+          
+          <button
+            onClick={() => {
+              setGameScore(prev => prev + 1000);
+              setCurrentScreen('menu');
+            }}
+            className="bg-red-600 border-4 border-yellow-400 px-12 py-6 hover:scale-105 active:scale-95 transition-transform duration-100 cursor-pointer select-none"
+            type="button"
+          >
+            <div className="text-3xl font-black text-yellow-400">INSERT COIN</div>
+            <div className="text-xl text-white text-center mt-2">PRESS START</div>
+          </button>
+          
+          <div className="mt-8 text-center text-yellow-400 text-sm">
+            <div className="mb-2">⬅️ ➡️ ⬆️ ⬇️ MOVE</div>
+            <div>🅰️ SELECT  🅱️ BACK</div>
+          </div>
+        </div>
+        
+        <div className="border-t-4 border-yellow-400 bg-black p-4 text-center">
+          <div className="text-yellow-400 text-sm">© 2024 MARINA & DANILO PRODUCTIONS</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const MainMenu = () => (
+    <div className="min-h-screen bg-black relative overflow-hidden font-mono">
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-blue-900 to-black">
+        {stars.map(star => (
+          <div
+            key={star.id}
+            className="absolute bg-white rounded-full"
+            style={{
+              left: `${star.x}%`,
+              top: `${star.y}%`,
+              width: `${star.size}px`,
+              height: `${star.size}px`
+            }}
+          />
+        ))}
+      </div>
+      
+      <div className="relative z-10 min-h-screen flex flex-col">
+        <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-b-4 border-yellow-400 bg-black gap-2">
+          <div className="text-yellow-400 text-lg">SELECT STAGE</div>
+          <div className="text-cyan-400 text-lg">LIVES: ♥♥♥</div>
+          <div className="text-red-400 text-lg">SCORE: {gameScore.toLocaleString()}</div>
+        </div>
+        
+        <div className="flex-1 flex flex-col items-center justify-center px-4">
+          <h1 className="text-4xl sm:text-6xl font-black text-yellow-400 mb-8 animate-pulse text-center">SELECT LEVEL</h1>
+          
+          <div className="mb-8 text-center">
+            <div className="text-xl text-cyan-400 mb-2">LIVELLI SBLOCCATI: {unlockedLevels.length}/3</div>
+            <div className="flex justify-center space-x-2">
+              {[1, 2, 3].map(level => (
+                <div 
+                  key={level}
+                  className={`w-4 h-4 border-2 ${isLevelUnlocked(level) ? 'bg-green-400 border-green-400' : 'bg-gray-600 border-gray-600'}`}
+                />
+              ))}
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full">
+            <button
+              onClick={() => handleLevelClick(1, 'story')}
+              disabled={!isLevelUnlocked(1)}
+              className={`border-4 border-white p-8 hover:scale-105 active:scale-95 transition-transform duration-100 cursor-pointer select-none ${
+                isLevelUnlocked(1) 
+                  ? 'bg-green-600' 
+                  : 'bg-gray-600 cursor-not-allowed opacity-50'
+              }`}
+              type="button"
+            >
+              <div className="text-center">
+                <div className="text-6xl mb-4">{isLevelUnlocked(1) ? '📚' : '🔒'}</div>
+                <div className="text-2xl font-black text-white mb-2">LEVEL 1</div>
+                <div className="text-xl text-green-100">CHARACTER PROFILES</div>
+                <div className="text-sm text-yellow-400 mt-2">
+                  {isLevelUnlocked(1) ? '★★★☆☆' : 'BLOCCATO'}
+                </div>
+              </div>
+            </button>
+            
+            <button
+              onClick={() => handleLevelClick(2, 'timeline')}
+              disabled={!isLevelUnlocked(2)}
+              className={`border-4 border-white p-8 hover:scale-105 active:scale-95 transition-transform duration-100 cursor-pointer select-none ${
+                isLevelUnlocked(2) 
+                  ? 'bg-blue-600' 
+                  : 'bg-gray-600 cursor-not-allowed opacity-50'
+              }`}
+              type="button"
+            >
+              <div className="text-center">
+                <div className="text-6xl mb-4">{isLevelUnlocked(2) ? '🗺️' : '🔒'}</div>
+                <div className="text-2xl font-black text-white mb-2">LEVEL 2</div>
+                <div className="text-xl text-blue-100">QUEST TIMELINE</div>
+                <div className="text-sm text-yellow-400 mt-2">
+                  {isLevelUnlocked(2) ? '★★★★☆' : 'COMPLETA LEVEL 1'}
+                </div>
+              </div>
+            </button>
+            
+            <button
+              onClick={() => handleLevelClick(3, 'event')}
+              disabled={!isLevelUnlocked(3)}
+              className={`border-4 border-white p-8 hover:scale-105 active:scale-95 transition-transform duration-100 cursor-pointer select-none ${
+                isLevelUnlocked(3) 
+                  ? 'bg-red-600' 
+                  : 'bg-gray-600 cursor-not-allowed opacity-50'
+              }`}
+              type="button"
+            >
+              <div className="text-center">
+                <div className="text-6xl mb-4">{isLevelUnlocked(3) ? '💒' : '🔒'}</div>
+                <div className="text-2xl font-black text-white mb-2">BOSS LEVEL</div>
+                <div className="text-xl text-red-100">FINAL WEDDING</div>
+                <div className="text-sm text-yellow-400 mt-2">
+                  {isLevelUnlocked(3) ? '★★★★★' : 'COMPLETA LEVEL 2'}
+                </div>
+              </div>
+            </button>
+          </div>
+          
+          <button
+            onClick={() => setCurrentScreen('home')}
+            className="mt-12 bg-gray-700 border-4 border-gray-400 px-8 py-4 text-xl text-gray-100 hover:bg-gray-600 cursor-pointer select-none"
+            type="button"
+          >
+            🅱️ BACK TO TITLE
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Character Profiles - CONTENUTO STATICO (no animazioni scroll)
+  const OurStory = () => (
+    <div className="min-h-screen bg-black relative overflow-hidden font-mono">
+      <div className="absolute inset-0 bg-gradient-to-br from-green-900 via-teal-900 to-black">
+        {stars.map(star => (
+          <div key={star.id} className="absolute bg-white rounded-full" style={{ left: `${star.x}%`, top: `${star.y}%`, width: `${star.size}px`, height: `${star.size}px` }} />
+        ))}
+      </div>
+      
+      <div className="fixed top-0 left-0 w-full h-2 bg-gray-800 z-50">
+        <div 
+          className="h-full bg-gradient-to-r from-green-400 to-cyan-400 transition-all duration-300"
+          style={{ width: `${scrollProgress}%` }}
+        />
+      </div>
+      
+      <div className="relative z-10 min-h-screen flex flex-col">
+        <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-b-4 border-green-400 bg-black gap-2">
+          <div className="text-green-400 text-lg">CHARACTER SELECT</div>
+          <div className="text-cyan-400 text-lg">PROGRESS: {Math.floor(scrollProgress)}%</div>
+          <div className="text-yellow-400 text-lg">SCORE: {gameScore.toLocaleString()}</div>
+        </div>
+        
+        <div className="flex-1 px-4 py-8">
+          <h1 className="text-4xl sm:text-5xl font-black text-center mb-12 text-green-400">CHARACTER PROFILES</h1>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+            {/* Marina - SEMPRE VISIBILE */}
+            <div className="bg-black border-4 border-cyan-400 p-8">
+              <div className="text-center mb-6">
+                <div className="text-4xl font-black text-cyan-400 mb-2">PLAYER 1</div>
+                <div className="w-32 h-32 mx-auto border-4 border-pink-400 bg-pink-600 flex items-center justify-center text-6xl mb-4">📸</div>
+                <div className="text-3xl font-black text-pink-400">MARINA</div>
+                <div className="text-xl text-yellow-400">FOTOGRAFA NINJA</div>
+              </div>
+              
+              <div className="space-y-4 text-cyan-100">
+                <div className="bg-cyan-900 bg-opacity-50 border-2 border-cyan-600 p-4">
+                  <div className="text-cyan-400 font-black mb-2">STATS:</div>
+                  <div>CREATIVITÀ: ████████░░</div>
+                  <div>VELOCITÀ: █████████░</div>
+                  <div>PRECISIONE: ████████░░</div>
+                </div>
+                
+                <div className="bg-cyan-900 bg-opacity-50 border-2 border-cyan-600 p-4">
+                  <div className="text-cyan-400 font-black mb-2">SPECIAL MOVES:</div>
+                  <div>• FOTO PERFETTA</div>
+                  <div>• SUPER SPRINT</div>
+                  <div>• MAGIC SHOT</div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Danilo - SEMPRE VISIBILE */}
+            <div className="bg-black border-4 border-purple-400 p-8">
+              <div className="text-center mb-6">
+                <div className="text-4xl font-black text-purple-400 mb-2">PLAYER 2</div>
+                <div className="w-32 h-32 mx-auto border-4 border-blue-400 bg-blue-600 flex items-center justify-center text-6xl mb-4">💻</div>
+                <div className="text-3xl font-black text-blue-400">DANILO</div>
+                <div className="text-xl text-yellow-400">TECH WIZARD</div>
+              </div>
+              
+              <div className="space-y-4 text-purple-100">
+                <div className="bg-purple-900 bg-opacity-50 border-2 border-purple-600 p-4">
+                  <div className="text-purple-400 font-black mb-2">STATS:</div>
+                  <div>LOGICA: ██████████</div>
+                  <div>PROBLEM SOLVING: █████████░</div>
+                  <div>SUPPORTO: ████████░░</div>
+                </div>
+                
+                <div className="bg-purple-900 bg-opacity-50 border-2 border-purple-600 p-4">
+                  <div className="text-purple-400 font-black mb-2">SPECIAL MOVES:</div>
+                  <div>• DEBUG MASTER</div>
+                  <div>• CODE STORM</div>
+                  <div>• TECH SUPPORT</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Team Formation - SEMPRE VISIBILE */}
+          <div className="mt-12 max-w-4xl mx-auto bg-black border-4 border-yellow-400 p-8">
+            <h3 className="text-3xl font-black text-center mb-6 text-yellow-400">TEAM FORMATION</h3>
+            <div className="text-center text-yellow-100 text-lg">
+              <div className="mb-4 text-2xl">PLAYER 1 + PLAYER 2 = PERFECT COMBO!</div>
+              <div className="mb-4">Quando MARINA e DANILO uniscono le forze, diventano imbattibili!</div>
+              <div className="text-cyan-400 text-xl">INSIEME HANNO COMPLETATO LA QUEST PIÙ IMPORTANTE: L'AMORE! 💖</div>
+            </div>
+          </div>
+          
+          <div className="text-center mt-8 pb-16">
+            <button 
+              onClick={() => setCurrentScreen('menu')} 
+              className="bg-green-600 border-4 border-green-400 px-8 py-4 text-xl text-green-100 hover:bg-green-500 cursor-pointer select-none"
+              type="button"
+            >
+              🅱️ BACK TO LEVEL SELECT
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Timeline COMPLETAMENTE RIDISEGNATA - Design curvilineo con foto
+  const Timeline = () => {
+    const timelineEvents = [
+      { date: "2019", title: "FIRST ENCOUNTER", desc: "Marina e Danilo si incontrano per la prima volta in una caffetteria di Milano", location: "Milano", photo: "☕", color: "from-pink-400 to-red-400" },
+      { date: "2019", title: "PRIMO APPUNTAMENTO", desc: "La prima uscita ufficiale: cena romantica e lunghe chiacchierate", location: "Ristorante Milanese", photo: "🍝", color: "from-purple-400 to-pink-400" },
+      { date: "2020", title: "RELAZIONE UFFICIALE", desc: "Diventano ufficialmente una coppia durante una passeggiata al parco", location: "Parco Sempione", photo: "💕", color: "from-blue-400 to-purple-400" },
+      { date: "2021", title: "PRIMO VIAGGIO", desc: "La loro prima vacanza insieme nella città dell'amore", location: "Parigi, Francia", photo: "🗼", color: "from-green-400 to-blue-400" },
+      { date: "2022", title: "CONVIVENZA", desc: "Decidono di fare il grande passo e andare a vivere insieme", location: "Milano", photo: "🏠", color: "from-yellow-400 to-green-400" },
+      { date: "2023", title: "PROPOSTA MAGICA", desc: "Danilo sorprende Marina con una proposta di matrimonio al tramonto", location: "Lago di Como", photo: "💍", color: "from-orange-400 to-yellow-400" },
+      { date: "2024", title: "IL GRANDE GIORNO", desc: "Finalmente sposi! Il giorno più bello della loro vita", location: "Milano", photo: "💒", color: "from-red-400 to-orange-400" }
+    ];
+
+    const visibleEvents = Math.min(Math.floor(scrollProgress / 12) + 1, timelineEvents.length);
+
+    return (
+      <div className="bg-black relative overflow-hidden font-mono" style={{ minHeight: '400vh' }}>
+        {/* Sfondo stellato */}
+        <div className="fixed inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-black">
+          {stars.map(star => (
+            <div key={star.id} className="absolute bg-white rounded-full animate-twinkle" style={{ left: `${star.x}%`, top: `${star.y}%`, width: `${star.size}px`, height: `${star.size}px` }} />
+          ))}
+        </div>
+        
+        {/* Progress bar */}
+        <div className="fixed top-0 left-0 w-full h-2 bg-gray-800 z-50">
+          <div 
+            className="h-full bg-gradient-to-r from-blue-400 to-pink-400 transition-all duration-300"
+            style={{ width: `${scrollProgress}%` }}
+          />
+        </div>
+        
+        {/* Linea del tempo curvilinea - SVG Path */}
+        <svg className="fixed inset-0 w-full h-full pointer-events-none z-10" style={{ minHeight: '400vh' }}>
+          <defs>
+            <linearGradient id="timelineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#60A5FA" />
+              <stop offset="50%" stopColor="#A78BFA" />
+              <stop offset="100%" stopColor="#F472B6" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M 200 100 Q 600 300 400 500 Q 200 700 600 900 Q 1000 1100 400 1300 Q 100 1500 700 1700 Q 1100 1900 300 2100 Q 50 2300 800 2500 Q 1200 2700 400 2900"
+            stroke="url(#timelineGradient)"
+            strokeWidth="6"
+            fill="none"
+            strokeDasharray="20,10"
+            className="animate-pulse"
+          />
+        </svg>
+        
+        <div className="relative z-20">
+          <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-b-4 border-blue-400 bg-black gap-2">
+            <div className="text-blue-400 text-lg">LOVE TIMELINE</div>
+            <div className="text-cyan-400 text-lg">PROGRESS: {Math.floor(scrollProgress)}%</div>
+            <div className="text-yellow-400 text-lg">SCORE: {gameScore.toLocaleString()}</div>
+          </div>
+          
+          <div className="px-4 py-16">
+            <h1 className="text-4xl sm:text-5xl font-black text-center mb-16 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-pink-400">
+              LA NOSTRA STORIA D'AMORE
+            </h1>
+            
+            <div className="text-center mb-12">
+              <div className="text-cyan-400 text-lg mb-4 animate-bounce">📜 SCORRI PER VIAGGIARE NEL TEMPO 📜</div>
+              <div className="text-yellow-400">⬇️ Segui la linea curva del destino ⬇️</div>
+            </div>
+            
+            {/* Eventi posizionati lungo la curva */}
+            <div className="relative max-w-6xl mx-auto">
+              {timelineEvents.slice(0, visibleEvents).map((event, index) => {
+                const isEven = index % 2 === 0;
+                const topPosition = 200 + (index * 350);
+                const leftPosition = isEven ? '10%' : '60%';
+                
+                return (
+                  <div 
+                    key={index}
+                    className="absolute transform transition-all duration-1000 ease-out"
+                    style={{ 
+                      top: `${topPosition}px`,
+                      left: leftPosition,
+                      opacity: index < visibleEvents ? 1 : 0,
+                      transform: `translateY(${index < visibleEvents ? 0 : 50}px) scale(${index < visibleEvents ? 1 : 0.8})`
+                    }}
+                  >
+                    {/* Foto/Icona principale */}
+                    <div className={`w-24 h-24 bg-gradient-to-br ${event.color} rounded-full border-4 border-white flex items-center justify-center text-4xl shadow-2xl mb-4 mx-auto animate-pulse`}>
+                      {event.photo}
+                    </div>
+                    
+                    {/* Card dell'evento */}
+                    <div className={`bg-black bg-opacity-90 border-4 border-white rounded-lg p-6 max-w-xs ${isEven ? 'ml-0' : 'mr-0'} shadow-2xl backdrop-blur-sm`}>
+                      <div className="flex justify-between items-center mb-3">
+                        <h3 className="text-lg font-black text-white">{event.title}</h3>
+                        <span className="text-yellow-400 font-black text-sm bg-yellow-400 bg-opacity-20 px-2 py-1 rounded">{event.date}</span>
+                      </div>
+                      
+                      <p className="text-gray-300 text-sm mb-3 leading-relaxed">{event.desc}</p>
+                      
+                      <div className="flex items-center text-cyan-400 text-xs">
+                        <span className="mr-1">📍</span>
+                        <span>{event.location}</span>
+                      </div>
+                      
+                      {/* Linea di connessione alla timeline */}
+                      <div className={`absolute top-12 ${isEven ? 'right-0' : 'left-0'} w-8 h-0.5 bg-gradient-to-r ${event.color} transform ${isEven ? 'translate-x-full' : '-translate-x-full'}`}></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* Completion indicator */}
+            {scrollProgress > 80 && (
+              <div className="mt-32 max-w-4xl mx-auto bg-black bg-opacity-90 border-4 border-pink-400 p-8 rounded-lg backdrop-blur-sm animate-pulse">
+                <h3 className="text-3xl font-black text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-red-400">
+                  🎉 LOVE STORY COMPLETED! 🎉
+                </h3>
+                
+                <div className="w-full bg-gray-800 border-4 border-gray-600 h-6 relative overflow-hidden rounded">
+                  <div 
+                    className="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 h-full flex items-center justify-center transition-all duration-2000 rounded"
+                    style={{ width: `${Math.min(scrollProgress, 100)}%` }}
+                  >
+                    {scrollProgress > 90 && (
+                      <div className="text-black font-black text-sm animate-bounce">
+                        ❤️ EVERY MOMENT WAS WORTH IT! ❤️
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {scrollProgress > 90 && (
+                  <div className="text-center mt-4">
+                    <div className="text-yellow-400 text-xl animate-pulse">
+                      💒 READY FOR THE FINAL BOSS: MATRIMONIO! 💒
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <div className="text-center mt-24 pb-16">
+              <button 
+                onClick={() => setCurrentScreen('menu')} 
+                className="bg-blue-600 border-4 border-blue-400 px-8 py-4 text-xl text-blue-100 hover:bg-blue-500 cursor-pointer select-none transform hover:scale-105 transition-all duration-200"
+                type="button"
+              >
+                🅱️ BACK TO LEVEL SELECT
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const Event = () => {
+    const addToGoogleCalendar = () => {
+      const eventDetails = {
+        title: 'BOSS BATTLE: Marina & Danilo Wedding Quest',
+        startDate: '2024-09-15T15:00:00',
+        endDate: '2024-09-15T23:00:00',
+        location: 'Chiesa di San Francesco, Via Roma 123, Milano',
+        description: 'FINAL BOSS FIGHT! Player 1 & Player 2 completano la loro ultimate quest.'
+      };
+      
+      const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(eventDetails.title)}&dates=${eventDetails.startDate.replace(/[-:]/g, '').replace('.000', '')}/${eventDetails.endDate.replace(/[-:]/g, '').replace('.000', '')}&location=${encodeURIComponent(eventDetails.location)}&details=${encodeURIComponent(eventDetails.description)}`;
+      
+      window.open(googleCalendarUrl, '_blank');
+    };
+
+    return (
+      <div className="min-h-screen bg-black relative overflow-hidden font-mono">
+        <div className="absolute inset-0 bg-gradient-to-br from-red-900 via-purple-900 to-black">
+          {stars.map(star => (
+            <div key={star.id} className="absolute bg-red-400 rounded-full animate-pulse" style={{ left: `${star.x}%`, top: `${star.y}%`, width: `${star.size}px`, height: `${star.size}px` }} />
+          ))}
+        </div>
+        
+        <div className="fixed top-0 left-0 w-full h-2 bg-gray-800 z-50">
+          <div 
+            className="h-full bg-gradient-to-r from-red-400 to-yellow-400 transition-all duration-300"
+            style={{ width: `${scrollProgress}%` }}
+          />
+        </div>
+        
+        <div className="relative z-10 min-h-screen flex flex-col">
+          <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-b-4 border-red-400 bg-black gap-2">
+            <div className="text-red-400 text-lg animate-pulse">⚠️ BOSS LEVEL ⚠️</div>
+            <div className="text-yellow-400 text-lg">PROGRESS: {Math.floor(scrollProgress)}%</div>
+            <div className="text-green-400 text-lg">LIVES: ♥♥♥</div>
+          </div>
+          
+          <div className="flex-1 px-4 py-8">
+            <div className="text-center mb-8">
+              <h1 className="text-5xl font-black text-red-400 mb-4 animate-pulse">FINAL BOSS</h1>
+              <h2 className="text-3xl font-black text-yellow-400">MATRIMONIO QUEST</h2>
+              <div className="text-xl text-red-300 mt-4">DIFFICULTY: ★★★★★ LEGENDARY</div>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+              <div className="space-y-6">
+                <div className="bg-black border-4 border-red-400 p-6">
+                  <h3 className="text-2xl font-black text-red-400 mb-4">🎯 MISSION BRIEFING</h3>
+                  <div className="text-red-100 space-y-2">
+                    <div className="flex justify-between"><span>TARGET DATE:</span><span className="text-yellow-400">15.09.2024</span></div>
+                    <div className="flex justify-between"><span>START TIME:</span><span className="text-yellow-400">15:00</span></div>
+                    <div className="flex justify-between"><span>CEREMONY:</span><span className="text-yellow-400">15:00-16:30</span></div>
+                    <div className="flex justify-between"><span>PARTY MODE:</span><span className="text-yellow-400">18:30-23:00</span></div>
+                  </div>
+                </div>
+                
+                <div className="bg-black border-4 border-purple-400 p-6">
+                  <h3 className="text-2xl font-black text-purple-400 mb-4">📍 BATTLE LOCATIONS</h3>
+                  <div className="text-purple-100 space-y-3">
+                    <div>
+                      <div className="text-yellow-400">STAGE 1: CERIMONIA</div>
+                      <div className="text-sm">Chiesa di San Francesco</div>
+                      <div className="text-sm">Via Roma 123, Milano</div>
+                    </div>
+                    <div className="border-t border-purple-600 pt-3">
+                      <div className="text-yellow-400">STAGE 2: BOSS FIGHT</div>
+                      <div className="text-sm">Villa dei Sogni</div>
+                      <div className="text-sm">Via delle Rose 45, Milano</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-6">
+                <div className="bg-black border-4 border-yellow-400 p-6">
+                  <h3 className="text-2xl font-black text-yellow-400 mb-4">🎮 PLAYER REQUIREMENTS</h3>
+                  <div className="text-yellow-100 space-y-2">
+                    <div>• DRESS CODE: ELEGANTE</div>
+                    <div>• EQUIPMENT: SORRISO + ENERGIA</div>
+                    <div>• RSVP DEADLINE: 01.08.2024</div>
+                    <div>• PARKING: AVAILABLE</div>
+                    <div className="text-green-400 mt-3">• MULTIPLAYER: RECOMMENDED!</div>
+                  </div>
+                </div>
+                
+                <div className="bg-black border-4 border-green-400 p-6">
+                  <h3 className="text-2xl font-black text-green-400 mb-4">📞 SUPPORT TEAM</h3>
+                  <div className="text-green-100 space-y-2">
+                    <div>PLAYER 1: +39 123 456 7890</div>
+                    <div>PLAYER 2: +39 098 765 4321</div>
+                    <div>EMAIL: marina.danilo@wedding.it</div>
+                    <div>DISCORD: Wedding Squad #2024</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-12 text-center">
+              <button
+                onClick={() => {
+                  addToGoogleCalendar();
+                  setGameScore(prev => prev + 2000);
+                }}
+                className="bg-gradient-to-r from-orange-600 to-red-600 border-4 border-yellow-400 px-12 py-6 hover:scale-105 active:scale-95 transition-transform duration-100 cursor-pointer select-none"
+                type="button"
+              >
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <span className="text-4xl">📅</span>
+                  <div>
+                    <div className="text-2xl font-black text-yellow-400">ADD TO CALENDAR</div>
+                    <div className="text-lg text-white">SAVE THE DATE!</div>
+                  </div>
+                  <span className="text-4xl">📅</span>
+                </div>
+              </button>
+            </div>
+            
+            <div className="mt-12 max-w-4xl mx-auto bg-black border-4 border-cyan-400 p-8">
+              <h3 className="text-3xl font-black text-center mb-6 text-cyan-400">🗺️ BATTLE MAP OVERVIEW</h3>
+              <div className="text-center text-cyan-100">
+                <div className="mb-4 text-xl">LA QUEST FINALE TI PORTERÀ ATTRAVERSO:</div>
+                <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 text-4xl mb-4">
+                  <div className="text-center">
+                    <div>⛪</div>
+                    <div className="text-sm text-yellow-400">STAGE 1</div>
+                  </div>
+                  <div className="text-green-400">➜</div>
+                  <div className="text-center">
+                    <div>🏰</div>
+                    <div className="text-sm text-yellow-400">STAGE 2</div>
+                  </div>
+                  <div className="text-green-400">➜</div>
+                  <div className="text-center">
+                    <div>🎉</div>
+                    <div className="text-sm text-yellow-400">VICTORY!</div>
+                  </div>
+                </div>
+                <div className="text-lg">CHIESA → VILLA → EPIC CELEBRATION!</div>
+                <div className="text-yellow-400 mt-4 text-xl">PREPARATI PER L'AVVENTURA PIÙ EPICA DELL'ANNO! 🏆</div>
+              </div>
+            </div>
+            
+            <div className="text-center mt-8 pb-16">
+              <button
+                onClick={() => setCurrentScreen('menu')}
+                className="bg-red-600 border-4 border-red-400 px-8 py-4 text-xl text-red-100 hover:bg-red-500 cursor-pointer select-none"
+                type="button"
+              >
+                🅱️ BACK TO LEVEL SELECT
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderCurrentScreen = () => {
+    switch(currentScreen) {
+      case 'home':
+        return <HomePage />;
+      case 'menu':
+        return <MainMenu />;
+      case 'story':
+        return <OurStory />;
+      case 'timeline':
+        return <Timeline />;
+      case 'event':
+        return <Event />;
+      default:
+        return <HomePage />;
+    }
+  };
+
+  return <div>{renderCurrentScreen()}</div>;
+};
+
+export default WeddingGame;
