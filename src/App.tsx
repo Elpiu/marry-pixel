@@ -4,7 +4,7 @@ import { HomePage } from './components/HomePage';
 import { MainMenu } from './components/MainMenu';
 import { OurStory } from './components/OurStory';
 import { Timeline } from './components/Timeline';
-import { Event } from './components/Event';
+import Event from './components/Event';
 import { GlobalHeader } from './components/GlobalHeader';
 
 interface Star {

@@ -16,19 +16,32 @@ interface EventProps {
   stars: Star[];
 }
 
-export const Event: React.FC<EventProps> = ({ setGameScore, scrollProgress, setCurrentScreen, stars }) => {
-  const addToGoogleCalendar = () => {
-    const eventDetails = {
-      title: 'BOSS BATTLE: Marina & Danilo Wedding Quest',
-      startDate: '2024-09-15T15:00:00',
-      endDate: '2024-09-15T23:00:00',
-      location: 'Chiesa di San Francesco, Via Roma 123, Milano',
-      description: 'FINAL BOSS FIGHT! Player 1 & Player 2 completano la loro ultimate quest.'
-    };
+const Event: React.FC<EventProps> = ({ setGameScore, scrollProgress, setCurrentScreen, stars }) => {
+  const [showCalendarMenu, setShowCalendarMenu] = React.useState(false);
 
+  const eventDetails = {
+    title: 'BOSS BATTLE: Marina & Danilo Wedding Quest',
+    startDate: '2024-09-15T15:00:00',
+    endDate: '2024-09-15T23:00:00',
+    location: 'Chiesa di San Francesco, Via Roma 123, Milano',
+    description: 'FINAL BOSS FIGHT! Player 1 & Player 2 completano la loro ultimate quest.'
+  };
+
+  const addToGoogleCalendar = () => {
     const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(eventDetails.title)}&dates=${eventDetails.startDate.replace(/[-:]/g, '').replace('.000', '')}/${eventDetails.endDate.replace(/[-:]/g, '').replace('.000', '')}&location=${encodeURIComponent(eventDetails.location)}&details=${encodeURIComponent(eventDetails.description)}`;
     window.open(googleCalendarUrl, '_blank');
+    setShowCalendarMenu(false);
+    setGameScore(prev => prev + 2000);
   };
+
+  const addToOutlook = () => {
+    const outlookUrl = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(eventDetails.title)}&startdt=${eventDetails.startDate}&enddt=${eventDetails.endDate}&location=${encodeURIComponent(eventDetails.location)}&body=${encodeURIComponent(eventDetails.description)}`;
+    window.open(outlookUrl, '_blank');
+    setShowCalendarMenu(false);
+    setGameScore(prev => prev + 2000);
+  };
+
+
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden font-mono">
@@ -95,12 +108,10 @@ export const Event: React.FC<EventProps> = ({ setGameScore, scrollProgress, setC
             </div>
           </div>
 
-          <div className="mt-12 text-center">
+          <div className="mt-12 text-center relative">
+            {/* Pulsante principale */}
             <button
-              onClick={() => {
-                addToGoogleCalendar();
-                setGameScore(prev => prev + 2000);
-              }}
+              onClick={() => setShowCalendarMenu(!showCalendarMenu)}
               className="bg-gradient-to-r from-orange-600 to-red-600 border-4 border-yellow-400 px-12 py-6 hover:scale-105 active:scale-95 transition-transform duration-100 cursor-pointer select-none"
               type="button"
             >
@@ -113,6 +124,43 @@ export const Event: React.FC<EventProps> = ({ setGameScore, scrollProgress, setC
                 <span className="text-4xl">📅</span>
               </div>
             </button>
+
+            {/* Menu dropdown */}
+            {showCalendarMenu && (
+              <>
+                {/* Overlay per chiudere il menu */}
+                <div 
+                  className="fixed inset-0 z-20" 
+                  onClick={() => setShowCalendarMenu(false)}
+                />
+                
+                {/* Menu opzioni calendario */}
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-4 z-30 bg-black border-4 border-cyan-400 min-w-max">
+                  <div className="p-4">
+                    <h3 className="text-xl font-black text-cyan-400 mb-4 text-center">SCEGLI IL TUO CALENDARIO</h3>
+                    
+                    <div className="space-y-2">
+                      <button
+                        onClick={addToGoogleCalendar}
+                        className="w-full bg-blue-600 border-2 border-blue-400 px-6 py-3 text-white hover:bg-blue-500 cursor-pointer flex items-center gap-3"
+                      >
+                        <span className="text-2xl">📧</span>
+                        <span className="font-bold">Google Calendar</span>
+                      </button>
+                      
+                      <button
+                        onClick={addToOutlook}
+                        className="w-full bg-indigo-600 border-2 border-indigo-400 px-6 py-3 text-white hover:bg-indigo-500 cursor-pointer flex items-center gap-3"
+                      >
+                        <span className="text-2xl">📫</span>
+                        <span className="font-bold">Microsoft Outlook</span>
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="mt-12 max-w-4xl mx-auto bg-black border-4 border-cyan-400 p-8">
@@ -154,3 +202,5 @@ export const Event: React.FC<EventProps> = ({ setGameScore, scrollProgress, setC
     </div>
   );
 };
+
+export default Event;
