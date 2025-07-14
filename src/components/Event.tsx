@@ -13,17 +13,24 @@ interface EventProps {
   setGameScore: (callback: (prev: number) => number) => void;
   scrollProgress: number;
   setCurrentScreen: (screen: string) => void;
+  playerName: string;
   stars: Star[];
 }
 
-const Event: React.FC<EventProps> = ({ setGameScore, scrollProgress, setCurrentScreen, stars }) => {
+const Event: React.FC<EventProps> = ({ setGameScore, scrollProgress, setCurrentScreen, playerName, stars }) => {
   const [showCalendarMenu, setShowCalendarMenu] = React.useState(false);
+  const [showVideoModal, setShowVideoModal] = React.useState(false);
+  const [rsvpSubmitted, setRsvpSubmitted] = React.useState(false);
+  const [rsvpData, setRsvpData] = React.useState({
+    attending: '',
+    guestCount: 1
+  });
 
   const eventDetails = {
     title: 'BOSS BATTLE: Marina & Danilo Wedding Quest',
-    startDate: '2024-09-15T15:00:00',
-    endDate: '2024-09-15T23:00:00',
-    location: 'Chiesa di San Francesco, Via Roma 123, Milano',
+    startDate: '2025-10-18T11:00:00',
+    endDate: '2025-10-18T23:00:00',
+    location: 'Chiesa Beata Vergine Di Lourdes e S. Bernardetta, Via Lago Lucrino 1, 80147, NAPOLI, Italia',
     description: 'FINAL BOSS FIGHT! Player 1 & Player 2 completano la loro ultimate quest.'
   };
 
@@ -41,11 +48,49 @@ const Event: React.FC<EventProps> = ({ setGameScore, scrollProgress, setCurrentS
     setGameScore(prev => prev + 2000);
   };
 
+const handleRSVP = async () => {
+  const endpoint = 'https://script.google.com/macros/s/AKfycbxmaEmH9eW8eZavDBQZGadN0Y20a9-dz0etz6_OJWb54fVa0V-eVWODJFe3TY5fetBQJg/exec';
+
+  const data = {
+    playerName,
+    attending: rsvpData.attending,
+    guestCount: rsvpData.guestCount
+  };
+
+  try {
+    await fetch(endpoint, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+    setRsvpSubmitted(true);
+    setGameScore(prev => prev + (rsvpData.attending === 'yes' ? 3000 : 1000));
+
+  } catch (err: any) {
+    alert('Errore di rete: ' + err.message);
+  }
+};
 
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden font-mono">
-      <StarBackground stars={stars} color="bg-red-400" gradient="bg-gradient-to-br from-red-900 via-purple-900 to-black" />
+      {/* SFONDO - NUOVO PERCORSO LEVEL3 MENO ZOOMATO */}
+      <div 
+        className="absolute inset-0 bg-contain bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('${process.env.PUBLIC_URL}/img/level3/sfondo.jpeg')`,
+          backgroundSize: 'contain',
+          filter: 'brightness(1.1) contrast(1.1) saturate(1.2)'
+        }}
+      >
+        <div className="absolute inset-0 bg-black/20"></div>
+      </div>
+
+      {/* Stelle animate sopra l'immagine */}
+      <StarBackground stars={stars} gradient="bg-transparent" />
 
       <div className="relative z-10 min-h-screen flex flex-col">
         <div className="flex-1 px-4 py-8">
@@ -57,55 +102,182 @@ const Event: React.FC<EventProps> = ({ setGameScore, scrollProgress, setCurrentS
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
             <div className="space-y-6">
-              <div className="bg-black border-4 border-red-400 p-6">
+              <div className="bg-black/90 border-4 border-red-400 p-6 backdrop-blur-sm">
                 <h3 className="text-2xl font-black text-red-400 mb-4">🎯 MISSION BRIEFING</h3>
                 <div className="text-red-100 space-y-2">
-                  <div className="flex justify-between"><span>TARGET DATE:</span><span className="text-yellow-400">15.09.2024</span></div>
-                  <div className="flex justify-between"><span>START TIME:</span><span className="text-yellow-400">15:00</span></div>
-                  <div className="flex justify-between"><span>CEREMONY:</span><span className="text-yellow-400">15:00-16:30</span></div>
-                  <div className="flex justify-between"><span>PARTY MODE:</span><span className="text-yellow-400">18:30-23:00</span></div>
+                  <div className="flex justify-between"><span>DATA MISSIONE:</span><span className="text-yellow-400">18-Ott 2025</span></div>
+                  <div className="flex justify-between"><span>CERIMONIA:</span><span className="text-yellow-400">11:00</span></div>
+                  <div className="flex justify-between"><span>PARTY:</span><span className="text-yellow-400">14:00</span></div>
                 </div>
               </div>
 
-              <div className="bg-black border-4 border-purple-400 p-6">
+              <div className="bg-black/90 border-4 border-purple-400 p-6 backdrop-blur-sm">
                 <h3 className="text-2xl font-black text-purple-400 mb-4">📍 BATTLE LOCATIONS</h3>
-                <div className="text-purple-100 space-y-3">
+                <div className="text-purple-100 space-y-4">
                   <div>
-                    <div className="text-yellow-400">STAGE 1: CERIMONIA</div>
-                    <div className="text-sm">Chiesa di San Francesco</div>
-                    <div className="text-sm">Via Roma 123, Milano</div>
+                    <div className="text-yellow-400 font-bold mb-1">STAGE 1: CERIMONIA</div>
+                    <div className="text-sm">Chiesa Beata Vergine Di Lourdes e S. Bernardetta</div>
+                    <div className="text-sm">Via Lago Lucrino 1, 80147, NAPOLI, Italia</div>
                   </div>
                   <div className="border-t border-purple-600 pt-3">
-                    <div className="text-yellow-400">STAGE 2: BOSS FIGHT</div>
-                    <div className="text-sm">Villa dei Sogni</div>
-                    <div className="text-sm">Via delle Rose 45, Milano</div>
+                    <div className="text-yellow-400 font-bold mb-1">STAGE 2: PARTY</div>
+                    <div className="text-sm">Villa Althea</div>
+                    <div className="text-sm">SP 333, 81041, Palombara, CE, Italia</div>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="space-y-6">
-              <div className="bg-black border-4 border-yellow-400 p-6">
+              <div className="bg-black/90 border-4 border-yellow-400 p-6 backdrop-blur-sm">
                 <h3 className="text-2xl font-black text-yellow-400 mb-4">🎮 PLAYER REQUIREMENTS</h3>
                 <div className="text-yellow-100 space-y-2">
                   <div>• DRESS CODE: ELEGANTE</div>
                   <div>• EQUIPMENT: SORRISO + ENERGIA</div>
-                  <div>• RSVP DEADLINE: 01.08.2024</div>
+                  <div>• <span className="text-green-400 font-bold">TERMINE CONFERMA:</span> Prima che leviamo l'ancora</div>
                   <div>• PARKING: AVAILABLE</div>
                   <div className="text-green-400 mt-3">• MULTIPLAYER: RECOMMENDED!</div>
                 </div>
               </div>
 
-              <div className="bg-black border-4 border-green-400 p-6">
+              <div className="bg-black/90 border-4 border-green-400 p-6 backdrop-blur-sm">
                 <h3 className="text-2xl font-black text-green-400 mb-4">📞 SUPPORT TEAM</h3>
                 <div className="text-green-100 space-y-2">
-                  <div>PLAYER 1: +39 123 456 7890</div>
-                  <div>PLAYER 2: +39 098 765 4321</div>
-                  <div>EMAIL: marina.danilo@wedding.it</div>
-                  <div>DISCORD: Wedding Squad #2024</div>
+                  <div>PLAYER 1: 3312142638</div>
+                  <div>PLAYER 2: 3496246978</div>
+                  <div>EMAIL: marinaedanilowedding@gmail.com</div>
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* FORZIERE DEL TESORO */}
+          <div className="mt-12 max-w-4xl mx-auto bg-black/90 border-4 border-yellow-400 p-8 backdrop-blur-sm">
+            <h3 className="text-3xl font-black text-center mb-6 text-yellow-400">💰 FORZIERE DEL TESORO</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Opzione 1: IBAN */}
+              <div className="bg-gradient-to-br from-yellow-900/50 to-orange-900/50 border-2 border-yellow-400 p-6 rounded-lg">
+                <h4 className="text-xl font-black text-yellow-400 mb-3">🏠 POTENZIAMENTO QUARTIER GENERALE</h4>
+                <p className="text-yellow-100 mb-4 text-sm leading-relaxed">
+                  Per potenziare il nostro quartier generale:
+                </p>
+                <div className="bg-black/50 p-3 rounded border border-yellow-400/50">
+                  <div className="text-yellow-400 font-bold text-xs mb-1">IBAN (Danilo e Marina):</div>
+                  <div className="text-white font-mono text-sm">IT55U0306939852100000014786</div>
+                </div>
+                <p className="text-yellow-200 text-xs mt-3 italic">
+                  Un powerup per trovare il nostro checkpoint nel mondo
+                </p>
+              </div>
+
+              {/* Opzione 2: Honeymoon */}
+              <div className="bg-gradient-to-br from-pink-900/50 to-purple-900/50 border-2 border-pink-400 p-6 rounded-lg">
+                <h4 className="text-xl font-black text-pink-400 mb-3">🌴 MISSIONE HONEYMOON</h4>
+                <p className="text-pink-100 mb-4 text-sm leading-relaxed">
+                  Se invece vuoi contribuire alla nostra missione Honeymoon:
+                </p>
+                <button 
+                  className="w-full bg-gradient-to-r from-pink-600 to-purple-600 border-2 border-pink-400 px-4 py-3 text-white hover:from-pink-500 hover:to-purple-500 cursor-pointer select-none transform hover:scale-105 transition-all duration-200 rounded"
+                  onClick={() => {
+                    setShowVideoModal(true);
+                    setGameScore(prev => prev + 1500);
+                  }}
+                >
+                  🎥 GUARDA VIDEO AGENZIA
+                </button>
+                <p className="text-pink-200 text-xs mt-3 italic text-center">
+                  Un contributo per esplorare templi antichi, giungle e acque turchesi
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* RSVP SECTION - NUOVO */}
+          <div className="mt-12 max-w-4xl mx-auto bg-black/90 border-4 border-orange-400 p-8 backdrop-blur-sm">
+            <h3 className="text-3xl font-black text-center mb-6 text-orange-400">🎯 CONFERMA PARTECIPAZIONE</h3>
+            
+            {!rsvpSubmitted ? (
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white mb-6">
+                  Ciao {playerName}! 👋
+                </div>
+                <div className="text-lg text-orange-100 mb-8">
+                  Conferma la tua partecipazione alla nostra quest finale!
+                </div>
+                
+                {/* Scelta SI/NO */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                  <button
+                    onClick={() => setRsvpData({...rsvpData, attending: 'yes'})}
+                    className={`p-6 border-4 rounded-lg transition-all duration-200 ${
+                      rsvpData.attending === 'yes' 
+                        ? 'bg-green-600 border-green-400 text-white scale-105' 
+                        : 'bg-gray-700 border-gray-500 text-gray-300 hover:border-green-400'
+                    }`}
+                  >
+                    <div className="text-4xl mb-2">✅</div>
+                    <div className="text-xl font-bold">SÌ, PARTECIPIAMO!</div>
+                    <div className="text-sm mt-2">Unisciti alla quest finale</div>
+                  </button>
+                  
+                  <button
+                    onClick={() => setRsvpData({...rsvpData, attending: 'no'})}
+                    className={`p-6 border-4 rounded-lg transition-all duration-200 ${
+                      rsvpData.attending === 'no' 
+                        ? 'bg-red-600 border-red-400 text-white scale-105' 
+                        : 'bg-gray-700 border-gray-500 text-gray-300 hover:border-red-400'
+                    }`}
+                  >
+                    <div className="text-4xl mb-2">❌</div>
+                    <div className="text-xl font-bold">NO, NON POSSIAMO</div>
+                    <div className="text-sm mt-2">Ci mancherete!</div>
+                  </button>
+                </div>
+                
+                {/* Numero partecipanti se SÌ */}
+                {rsvpData.attending === 'yes' && (
+                  <div className="mb-6">
+                    <label className="block text-orange-400 font-bold mb-3 text-lg">
+                      👨‍👩‍👧‍👦 Quanti partecipanti?
+                    </label>
+                    <select
+                      value={rsvpData.guestCount}
+                      onChange={(e) => setRsvpData({...rsvpData, guestCount: parseInt(e.target.value)})}
+                      className="bg-black/80 border-2 border-orange-400 text-white px-4 py-2 rounded-lg text-lg font-bold focus:border-yellow-400 focus:outline-none"
+                    >
+                      {[1,2,3,4,5,6,7,8,9,10].map(num => (
+                        <option key={num} value={num}>{num} {num === 1 ? 'persona' : 'persone'}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                
+                {/* Pulsante conferma */}
+                {rsvpData.attending && (
+                  <button
+                    onClick={handleRSVP}
+                    className="bg-gradient-to-r from-orange-600 to-red-600 border-4 border-yellow-400 px-8 py-4 text-xl text-white hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer select-none font-black rounded-lg animate-pulse"
+                  >
+                    📧 INVIA CONFERMA EMAIL
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="text-center">
+                <div className="text-4xl mb-4">🎉</div>
+                <div className="text-2xl font-bold text-green-400 mb-4">
+                  RSVP INVIATO CON SUCCESSO!
+                </div>
+                <div className="text-lg text-green-100">
+                  Grazie {playerName} per aver confermato! 
+                  {rsvpData.attending === 'yes' ? ' Vi aspettiamo! 💒' : ' Ci mancherete! 💙'}
+                </div>
+                <div className="text-yellow-400 mt-4 font-bold">
+                  +{rsvpData.attending === 'yes' ? '3000' : '1000'} PUNTI BONUS!
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="mt-12 text-center relative">
@@ -163,7 +335,7 @@ const Event: React.FC<EventProps> = ({ setGameScore, scrollProgress, setCurrentS
             )}
           </div>
 
-          <div className="mt-12 max-w-4xl mx-auto bg-black border-4 border-cyan-400 p-8">
+          <div className="mt-12 max-w-4xl mx-auto bg-black/90 border-4 border-cyan-400 p-8 backdrop-blur-sm">
             <h3 className="text-3xl font-black text-center mb-6 text-cyan-400">🗺️ BATTLE MAP OVERVIEW</h3>
             <div className="text-center text-cyan-100">
               <div className="mb-4 text-xl">LA QUEST FINALE TI PORTERÀ ATTRAVERSO:</div>
@@ -171,16 +343,19 @@ const Event: React.FC<EventProps> = ({ setGameScore, scrollProgress, setCurrentS
                 <div className="text-center">
                   <div>⛪</div>
                   <div className="text-sm text-yellow-400">STAGE 1</div>
+                  <div className="text-xs text-cyan-200">NAPOLI</div>
                 </div>
                 <div className="text-green-400">➜</div>
                 <div className="text-center">
                   <div>🏰</div>
                   <div className="text-sm text-yellow-400">STAGE 2</div>
+                  <div className="text-xs text-cyan-200">PALOMBARA</div>
                 </div>
                 <div className="text-green-400">➜</div>
                 <div className="text-center">
                   <div>🎉</div>
                   <div className="text-sm text-yellow-400">VICTORY!</div>
+                  <div className="text-xs text-cyan-200">FOREVER</div>
                 </div>
               </div>
               <div className="text-lg">CHIESA → VILLA → EPIC CELEBRATION!</div>
@@ -199,6 +374,57 @@ const Event: React.FC<EventProps> = ({ setGameScore, scrollProgress, setCurrentS
           </div>
         </div>
       </div>
+
+      {/* MODAL VIDEO HONEYMOON */}
+      {showVideoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          {/* Overlay per chiudere */}
+          <div 
+            className="absolute inset-0" 
+            onClick={() => setShowVideoModal(false)}
+          />
+          
+          {/* Container video */}
+          <div className="relative z-10 w-full max-w-4xl mx-4">
+            <div className="bg-black/95 border-4 border-pink-400 rounded-lg p-6 backdrop-blur-sm">
+              
+              {/* Header modal */}
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-2xl font-black text-pink-400">🌴 HONEYMOON ADVENTURE</h3>
+                <button
+                  onClick={() => setShowVideoModal(false)}
+                  className="text-white hover:text-pink-400 text-3xl font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              {/* Video player */}
+              <div className="relative aspect-video bg-black rounded-lg overflow-hidden border-2 border-pink-400/50">
+                <video 
+                  className="w-full h-full"
+                  controls
+                  autoPlay
+                  src={`${process.env.PUBLIC_URL}/img/level3/video.mp4`}
+                >
+                  Il tuo browser non supporta i video HTML5.
+                </video>
+              </div>
+              
+              {/* Descrizione sotto il video */}
+              <div className="mt-4 text-center">
+                <p className="text-pink-100 text-lg">
+                  🏝️ Unisciti alla nostra avventura tra templi antichi e paradisi tropicali!
+                </p>
+                <p className="text-pink-200 text-sm mt-2">
+                  Un contributo per esplorare il mondo insieme come novelli sposi ✨
+                </p>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

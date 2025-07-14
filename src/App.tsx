@@ -21,6 +21,7 @@ const WeddingGame: React.FC = () => {
   const [gameScore, setGameScore] = useState<number>(0);
   const [unlockedLevels, setUnlockedLevels] = useState<number[]>([1]);
   const [scrollProgress, setScrollProgress] = useState<number>(0);
+  const [playerName, setPlayerName] = useState<string>('');
 
   // Inizializzazione delle stelle
   useEffect(() => {
@@ -90,7 +91,8 @@ const WeddingGame: React.FC = () => {
       if (level === 1 && !isLevelUnlocked(2)) {
         unlockLevel(2);
       } else if (level === 2 && !isLevelUnlocked(3)) {
-        unlockLevel(3);
+        // Il livello 3 viene sbloccato solo completando la timeline
+        // Non sbloccare automaticamente qui
       }
     }
   };
@@ -104,6 +106,8 @@ const WeddingGame: React.FC = () => {
           stars={stars} 
           scrollProgress={scrollProgress}
           gameScore={gameScore}
+          playerName={playerName}
+          setPlayerName={setPlayerName}
         />;
       case 'menu':
         return <MainMenu
@@ -127,6 +131,8 @@ const WeddingGame: React.FC = () => {
           gameScore={gameScore} 
           scrollProgress={scrollProgress} 
           setCurrentScreen={setCurrentScreen} 
+          setGameScore={setGameScore}
+          unlockLevel={unlockLevel}
           stars={stars} 
         />;
       case 'event':
@@ -134,6 +140,7 @@ const WeddingGame: React.FC = () => {
           setGameScore={setGameScore} 
           scrollProgress={scrollProgress} 
           setCurrentScreen={setCurrentScreen} 
+          playerName={playerName}
           stars={stars} 
         />;
       default:
@@ -143,6 +150,8 @@ const WeddingGame: React.FC = () => {
           stars={stars} 
           scrollProgress={scrollProgress}
           gameScore={gameScore}
+          playerName={playerName}
+          setPlayerName={setPlayerName}
         />;
     }
   };

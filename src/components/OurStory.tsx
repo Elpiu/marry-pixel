@@ -1,7 +1,6 @@
 import React from 'react';
 import { StarBackground } from './common/StarBackground';
 
-
 interface Star {
   id: number;
   x: number;
@@ -26,7 +25,19 @@ export const OurStory: React.FC<OurStoryProps> = ({ gameScore, scrollProgress, s
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden font-mono">
-      <StarBackground stars={stars} gradient="bg-gradient-to-br from-green-900 via-teal-900 to-black" />
+      {/* SFONDO - IMMAGINE LEVEL1 */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('${process.env.PUBLIC_URL}/img/level1/sfondo.jpeg')`,
+          filter: 'brightness(0.7) contrast(1.1)'
+        }}
+      >
+        <div className="absolute inset-0 bg-black/35"></div>
+      </div>
+
+      {/* Stelle animate sopra l'immagine */}
+      <StarBackground stars={stars} gradient="bg-transparent" />
 
       <div className="relative z-10 min-h-screen flex flex-col">
         <div className="flex-1 px-4 py-8">
@@ -34,10 +45,28 @@ export const OurStory: React.FC<OurStoryProps> = ({ gameScore, scrollProgress, s
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
             {/* Marina - SEMPRE VISIBILE */}
-            <div className="bg-black border-4 border-cyan-400 p-8">
+            <div className="bg-black/90 border-4 border-cyan-400 p-8 backdrop-blur-sm">
               <div className="text-center mb-6">
                 <div className="text-4xl font-black text-cyan-400 mb-2">PLAYER 1</div>
-                <div className="w-32 h-32 mx-auto border-4 border-pink-400 bg-pink-600 flex items-center justify-center text-6xl mb-4">📸</div>
+                <div className="w-32 h-32 mx-auto border-4 border-pink-400 bg-pink-600 mb-4 relative overflow-hidden rounded-lg">
+                  <img 
+                    src={`${process.env.PUBLIC_URL}/img/level1/marina.jpg`}
+                    alt="Marina" 
+                    className="w-full h-full object-cover"
+                    style={{ imageRendering: 'pixelated' }}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      if (target.parentElement) {
+                        target.parentElement.innerHTML = `
+                          <div class="w-full h-full bg-gradient-to-br from-pink-400 to-pink-600 border-2 border-black relative flex items-center justify-center text-6xl">
+                            📸
+                          </div>
+                        `;
+                      }
+                    }}
+                  />
+                </div>
                 <div className="text-3xl font-black text-pink-400">MARINA</div>
                 <div className="text-xl text-yellow-400">FOTOGRAFA NINJA</div>
               </div>
@@ -52,18 +81,36 @@ export const OurStory: React.FC<OurStoryProps> = ({ gameScore, scrollProgress, s
 
                 <div className="bg-cyan-900 bg-opacity-50 border-2 border-cyan-600 p-4">
                   <div className="text-cyan-400 font-black mb-2">SPECIAL MOVES:</div>
-                  <div>• FOTO PERFETTA</div>
-                  <div>• SUPER SPRINT</div>
-                  <div>• MAGIC SHOT</div>
+                  <div>• MAGIC SHOT (foto WOW garantite)</div>
+                  <div>• SUPER SPRINT (scatto ninja istantaneo)</div>
+                  <div>• MOSH PIT MASTER (boss della folla scatenata)</div>
                 </div>
               </div>
             </div>
 
             {/* Danilo - SEMPRE VISIBILE */}
-            <div className="bg-black border-4 border-purple-400 p-8">
+            <div className="bg-black/90 border-4 border-purple-400 p-8 backdrop-blur-sm">
               <div className="text-center mb-6">
                 <div className="text-4xl font-black text-purple-400 mb-2">PLAYER 2</div>
-                <div className="w-32 h-32 mx-auto border-4 border-blue-400 bg-blue-600 flex items-center justify-center text-6xl mb-4">💻</div>
+                <div className="w-32 h-32 mx-auto border-4 border-blue-400 bg-blue-600 mb-4 relative overflow-hidden rounded-lg">
+                  <img 
+                    src={`${process.env.PUBLIC_URL}/img/level1/danilo.jpg`}
+                    alt="Danilo" 
+                    className="w-full h-full object-cover"
+                    style={{ imageRendering: 'pixelated' }}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      if (target.parentElement) {
+                        target.parentElement.innerHTML = `
+                          <div class="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 border-2 border-black relative flex items-center justify-center text-6xl">
+                            💻
+                          </div>
+                        `;
+                      }
+                    }}
+                  />
+                </div>
                 <div className="text-3xl font-black text-blue-400">DANILO</div>
                 <div className="text-xl text-yellow-400">TECH WIZARD</div>
               </div>
@@ -78,16 +125,16 @@ export const OurStory: React.FC<OurStoryProps> = ({ gameScore, scrollProgress, s
 
                 <div className="bg-purple-900 bg-opacity-50 border-2 border-purple-600 p-4">
                   <div className="text-purple-400 font-black mb-2">SPECIAL MOVES:</div>
-                  <div>• DEBUG MASTER</div>
-                  <div>• CODE STORM</div>
-                  <div>• TECH SUPPORT</div>
+                  <div>• DEBUG MASTER (caccia-bug leggendario)</div>
+                  <div>• TECH SUPPORT (eroe della tecnologia)</div>
+                  <div>• ASTRO ADMIRER (ammiratore di costellazioni e aurore)</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Team Formation - SEMPRE VISIBILE */}
-          <div className="mt-12 max-w-4xl mx-auto bg-black border-4 border-yellow-400 p-8">
+          <div className="mt-12 max-w-4xl mx-auto bg-black/90 border-4 border-yellow-400 p-8 backdrop-blur-sm">
             <h3 className="text-3xl font-black text-center mb-6 text-yellow-400">TEAM FORMATION</h3>
             <div className="text-center text-yellow-100 text-lg">
               <div className="mb-4 text-2xl">PLAYER 1 + PLAYER 2 = PERFECT COMBO!</div>
@@ -97,7 +144,7 @@ export const OurStory: React.FC<OurStoryProps> = ({ gameScore, scrollProgress, s
           </div>
 
           {/* LEVEL COMPLETED SECTION */}
-          <div className="mt-12 max-w-4xl mx-auto bg-black border-4 border-green-400 p-8">
+          <div className="mt-12 max-w-4xl mx-auto bg-black/90 border-4 border-green-400 p-8 backdrop-blur-sm">
             <h3 className="text-3xl font-black text-center mb-6 text-green-400 animate-pulse">
               🎉 LEVEL 1 COMPLETED! 🎉
             </h3>

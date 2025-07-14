@@ -28,7 +28,19 @@ export const MainMenu: React.FC<MainMenuProps> = ({
 }) => {
   return (
     <div className="min-h-screen bg-black relative overflow-hidden font-mono">
-      <StarBackground stars={stars} gradient="bg-gradient-to-br from-purple-900 via-blue-900 to-black" />
+      {/* SFONDO - IMMAGINE SELECTHOME */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('${process.env.PUBLIC_URL}/img/selectHome/sfondo.jpeg')`,
+          filter: 'brightness(0.7) contrast(1.2)'
+        }}
+      >
+        <div className="absolute inset-0 bg-black/40"></div>
+      </div>
+
+      {/* Stelle animate sopra l'immagine */}
+      <StarBackground stars={stars} gradient="bg-transparent" />
 
       <div className="relative z-10 min-h-screen flex flex-col">
         <div className="flex-1 flex flex-col items-center justify-center px-4">
